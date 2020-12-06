@@ -24,9 +24,6 @@ import com.microservice.currencyconversionservice.service.CurrencyExchangeProxy;
 @RequestMapping("currency-converter")
 public class CurrencyConversionController {
 	@Autowired
-	private Environment env;
-	
-	@Autowired
 	private CurrencyExchangeProxy currencyExchangeProxy;
 
 	@GetMapping("/from/{from}/to/{to}/quantity/{amount}")
@@ -44,7 +41,6 @@ public class CurrencyConversionController {
 			if (Objects.nonNull(currencyBean)) {
 				currencyBean.setQuantity(amount);
 				currencyBean.setCalculatedAmount(amount.multiply(currencyBean.getConversionMultiple()));
-				currencyBean.setPort(Integer.parseInt(env.getProperty("local.server.port")));
 				return currencyBean;
 			}
 		} catch (RestClientException e) {
@@ -58,7 +54,6 @@ public class CurrencyConversionController {
 			@PathVariable BigDecimal amount) {
 		CurrencyConversionBean currencyBean = currencyExchangeProxy.retrieveExchangevalue(from, to);
 		if(Objects.nonNull(currencyBean)) {
-			currencyBean.setPort(Integer.parseInt(env.getProperty("local.server.port")));
 			currencyBean.setQuantity(amount);
 			currencyBean.setCalculatedAmount(amount.multiply(currencyBean.getConversionMultiple()));
 		}
