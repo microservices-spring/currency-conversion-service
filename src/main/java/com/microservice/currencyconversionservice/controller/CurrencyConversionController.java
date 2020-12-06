@@ -18,12 +18,16 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.microservice.currencyconversionservice.entity.CurrencyConversionBean;
+import com.microservice.currencyconversionservice.service.CurrencyExchangeProxy;
 
 @RestController
 @RequestMapping("currency-converter")
 public class CurrencyConversionController {
 	@Autowired
 	private Environment env;
+	
+	@Autowired
+	private CurrencyExchangeProxy currencyExchangeProxy;
 
 	@GetMapping("/from/{from}/to/{to}/quantity/{amount}")
 	public CurrencyConversionBean convert(@PathVariable String from, @PathVariable String to,
@@ -47,5 +51,17 @@ public class CurrencyConversionController {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	@GetMapping("/proxy/from/{from}/to/{to}/quantity/{amount}")
+	public CurrencyConversionBean convertUsingProxy(@PathVariable String from, @PathVariable String to,
+			@PathVariable BigDecimal amount) {
+		CurrencyConversionBean currencyBean = currencyExchangeProxy.retrieveExchangevalue(from, to);
+		if(Objects.nonNull(currencyBean)) {
+			currencyBean.setPort(Integer.parseInt(env.getProperty("local.server.port")));
+			currencyBean.setQuantity(amount);
+			currencyBean.setCalculatedAmount(amount.multiply(currencyBean.getConversionMultiple()));
+		}
+		return currencyBean;
 	}
 }
